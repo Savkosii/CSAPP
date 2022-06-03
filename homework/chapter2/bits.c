@@ -184,10 +184,14 @@ int leftmost_one(unsigned x) {
     //every bit after the leftmost `1` is `1`
     //But we have make assumption that x is not zero. If x is zero, after the or operations and
     //right shift operations, x will be still zero. But we add a additional 1 to x
+    int bool_x = x && 1;
+    x |= x >> 1;
+    x |= x >> 2;
     x |= x >> 4;
     x |= x >> 8;
     x |= x >> 16;
-    return (x >> 1) + (0 || x);
+    x = (x >> 1) + bool_x;
+    return x;
 } 
 
 
