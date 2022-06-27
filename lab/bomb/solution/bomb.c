@@ -8,6 +8,10 @@ int string_length(char *);
 int strings_not_equal(char *, char *);
 int read_six_numbers(char *, int *);
 char *read_line();
+int blank_line();
+int __printf_chk(int, char *, char *);
+void signal(void *, int);
+
 
 void explode_bomb() {
     char *str_0x4025a3 = "BOOM!!!";
@@ -41,18 +45,17 @@ void phase_2(char *input) {
     //payload: 1 2 4 8 16 32
 }
 
-
 //%rdi: char *input 
 int phase_3(char *input) {
     int buf[6];
-    //.rodata: 0x4025cf
-    //25 64 20 25 64 00 -> "%d %d"
+    //.rodata: 
+    //0x4025cf  25 64 20 25 64 00 -> "%d %d"
     char *str_0x4025cf = "%d %d";
     if (sscanf(input, str_0x4025cf, buf + 2, buf + 3) <= 1) {
         explode_bomb();
     }
     //jmp *0x402470 + buf[2] * 8
-    //.rodata: 0x402470 (little endian):
+    //.rodata (little endian):
     //402470  7c0f4000 00000000
     //402478  b90f4000 00000000
     //402480  830f4000 00000000
@@ -89,7 +92,6 @@ int phase_3(char *input) {
     return target;
     //payload: 0 207
 }
-
 
 //%edi: int x; %esi: int y; %edx: int z
 int func4(int x, int y, int z) {
@@ -176,6 +178,7 @@ struct node {
     struct node *next;
 };
 
+//.data
 struct node node1_0x6032d0 = {
     (int)0x14c,
     (int)0x1,
@@ -392,6 +395,7 @@ int fun7(struct st *x, int y) {
 }
 
 void phase_defused();
+
 void secret_phase() {
     long val = strtol(read_line(), 0, 10);
     if ((int)(val - 1) > 0x3e8) {
@@ -403,10 +407,11 @@ void secret_phase() {
     puts("Wow! You've defused the secret stage!");
     phase_defused();
     //path: 0x24 -> 0x8 -> 0x16
-    //payload: 22  (not used)
+    //payload: 22 (not used)
 }
 
 char *input_strings_0x603780 = 0;
+
 int num_input_strings = 0;
 
 void phase_defused() {
@@ -416,6 +421,7 @@ void phase_defused() {
     int x, y;
     char buf[UNKNOWN];
     char *str_0x603870 = input_strings_0x603780 + 0xf0;
+    //.data:
     //0x603780 +   0: The border...
     //0x603780 +  80: 1 2 4 8 16 32
     //0x603780 + 160: 0 207
@@ -435,8 +441,7 @@ void phase_defused() {
 
 FILE *infile;
 
-int blank_line();
-char * skip() {
+char *skip() {
     char *buf = input_strings_0x603780 + num_input_strings * 80;
     char *res;
     if ((res = fgets(buf, 80, infile)) == NULL) {
@@ -501,17 +506,14 @@ char *read_line() {
     }
 }
 
-int __printf_chk(int flag, char *, char *);
 void invalid_phase(char *s) {
     __printf_chk(1, "Invalid phase%s", s);
     exit(8);
 }
 
-void signal(void *, int);
 void initialize_bomb() {
     signal((void *)0x4012a0, 2);
 }
-
 
 int main(int argc, char *argv[]) {
     if (argc == 1) {  
